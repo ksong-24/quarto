@@ -1,0 +1,136 @@
+---
+title: Observing
+author: "Kyle Song"
+format: revealjs
+smaller: true
+scrollable: true
+---
+
+
+# Observable JS
+
+## Diagram
+
+```{ojs}
+viewof densityLarger = Inputs.range([0.001, 20], {label: "ρM:", step: 0.001, value: 0.687})
+```
+
+```{ojs}
+viewof densitySmaller = Inputs.range([0.001, 20], {label: "ρm", step: 0.001, value: 0.917})
+```
+
+```{ojs}
+viewof primaryRadius = Inputs.range([2000, 70000], {label: "Radius of the Primary:", step: 1, value: 59232})
+```
+
+```{ojs}
+viewof model = Inputs.radio(["Rigid", "Fluid"], {label: "Roche Limit Model: ", value: "Rigid"})
+```
+
+```{ojs}
+{
+
+  var limit;
+  var limitColor;
+  if (model == "Rigid"){
+    limit = primaryRadius * Math.pow(densityLarger/densitySmaller * 2, 1/3)
+    limitColor = '#a3f333'
+  } else {
+    limit = 2.44*primaryRadius*Math.pow(densityLarger/densitySmaller,1/3)
+    limitColor = '#0033f0'
+  }
+  let target = DOM.element('div')
+  const width = 600 
+  const height = 400
+
+// desired xDomain values
+  const xScale = [-1, 2]
+  functionPlot({
+    width: width,
+    height: height,
+
+    yAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*2, Math.pow(primaryRadius, 21/20)*2]},
+    xAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*3, Math.pow(primaryRadius, 21/20)*3]},
+    xDomain: xScale,
+    yDomain: computeYScale(width, height, xScale),
+    target,
+    data: [
+
+    //outer circle
+      { fn:  'sqrt(' + limit * limit + ' - x * x)', closed:true, color: limitColor, skipTip: true },
+      { fn: '-sqrt(' + limit * limit + ' - x * x)', closed:true, color: limitColor, skipTip: true},
+    
+    //inner circle
+      { fn: 'sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#a88c4d', skipTip: true },
+      { fn: '-sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#a88c4d', skipTip: true, transparency: 0 },
+    ]
+  })
+
+  return target
+}
+```
+
+
+## both models?
+
+
+
+```{ojs}
+function computeYScale (width, height, xScale) {
+  const xDiff = xScale[1] - xScale[0]
+  const yDiff = height * xDiff / width
+  return [-yDiff / 2, yDiff / 2]
+}
+```
+
+```{ojs}
+functionPlot = require("function-plot@1.22.2/dist/function-plot")
+
+{
+  let target = DOM.element('div')
+  const width = 600 
+  const height = 400
+
+// desired xDomain values
+  const xScale = [-1, 2]
+  functionPlot({
+    width: width,
+    height: height,
+    grid: true,
+    yLabel: 'test',
+    yAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*2, Math.pow(primaryRadius, 21/20)*2]},
+    xAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*3, Math.pow(primaryRadius, 21/20)*3]},
+    xDomain: xScale,
+    yDomain: computeYScale(width, height, xScale),
+    target,
+    data: [
+
+    //rigid limit
+      { fn: 'sqrt(' + primaryRadius * Math.pow(densityLarger/densitySmaller * 2, 1/3) * primaryRadius * Math.pow(densityLarger/densitySmaller * 2, 1/3) + ' - x * x)', closed:false, color: '#f33333', skipTip: true, closed:true},
+      { fn: '-sqrt(' + primaryRadius * Math.pow(densityLarger/densitySmaller * 2, 1/3) * primaryRadius * Math.pow(densityLarger/densitySmaller * 2, 1/3) + ' - x * x)', closed:false, color: '#f33333', skipTip: true, closed:true},
+
+
+    //fluid limit
+      { fn: 'sqrt(' + 2.44*primaryRadius*Math.pow(densityLarger/densitySmaller,1/3) * 2.44*primaryRadius*Math.pow(densityLarger/densitySmaller,1/3) + ' - x * x)', closed:false, color: '#0033f0', skipTip: true},
+      { fn: '-sqrt(' + 2.44*primaryRadius*Math.pow(densityLarger/densitySmaller,1/3) * 2.44*primaryRadius*Math.pow(densityLarger/densitySmaller,1/3) + ' - x * x)', closed:false, color: '#0033f0', skipTip: true},
+    
+    //inner circle
+      { fn: 'sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#a88c4d', skipTip: true },
+      { fn: '-sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#a88c4d', skipTip: true },
+    ]
+  })
+
+  return target
+}
+``` 
+
+```{ojs}
+import {Scrubber} from "@mbostock/scrubber"
+
+viewof t = Scrubber(d3.ticks(0, 2 * Math.PI, 500), {
+  autoplay: true,
+  loop: true,
+  initial: 0,
+  format: x => `t = ${x.toFixed(3)}`
+})
+```

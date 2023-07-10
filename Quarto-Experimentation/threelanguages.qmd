@@ -1,0 +1,29 @@
+---
+title: "repr"
+---
+
+This is R code.
+```{r}
+#| code-fold: true
+#| code-summary: "My text"
+
+1 + 1
+```
+
+This is Python code.
+```{python}
+#| code-fold: true
+#| code-summary: "My text"
+
+1 + 1
+```
+
+This is OJS code.
+```{ojs}
+//| code-fold: true
+//| code-summary: "My text"
+
+1 + 1
+```
+
+End.

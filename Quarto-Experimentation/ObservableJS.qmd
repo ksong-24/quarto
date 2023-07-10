@@ -1,0 +1,172 @@
+---
+title: Observable
+author: "Kyle Song"
+format:
+    html:
+        code-fold: true
+---
+
+
+# Observable JS
+
+## Diagram
+
+```{ojs}
+viewof densityLarger = Inputs.range([0.001, 20], {label: "ρM:", step: 0.001, value: 0.687})
+```
+
+```{ojs}
+viewof densitySmaller = Inputs.range([0.001, 20], {label: "ρm", step: 0.001, value: 0.917})
+```
+
+```{ojs}
+viewof primaryRadius = Inputs.range([2000, 70000], {label: "Radius of the Primary:", step: 1, value: 59232})
+```
+
+```{ojs}
+viewof model = Inputs.radio(["Rigid", "Fluid"], {label: "Roche Limit Model: ", value: "Rigid"})
+```
+
+```{ojs}
+{
+
+  var limit;
+  var limitColor;
+  if (model == "Rigid"){
+    limit = primaryRadius * Math.pow(densityLarger/densitySmaller * 2, 1/3)
+    limitColor = '#a3f333'
+  } else {
+    limit = 2.44*primaryRadius*Math.pow(densityLarger/densitySmaller,1/3)
+    limitColor = '#5588f5'
+  }
+  let target = DOM.element('div')
+  const width = 600 
+  const height = 400
+  var planetColor = (13740668 - (parseInt(densityLarger * 6) * 65793)).toString(16)
+  var dotColor = (13740668 - (parseInt(densitySmaller * 6) * 65793)).toString(16)
+  
+
+// desired xDomain values
+  const xScale = [-1, 2]
+  functionPlot({
+    width: width,
+    height: height,
+
+    yAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*2, Math.pow(primaryRadius, 21/20)*2]},
+    xAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*3, Math.pow(primaryRadius, 21/20)*3]},
+    xDomain: xScale,
+    yDomain: computeYScale(width, height, xScale),
+    target,
+    data: [
+
+    //outer circle
+      { fn:  'sqrt(' + limit * limit + ' - x * x)', closed:false, color: limitColor, skipTip: true },
+      { fn: '-sqrt(' + limit * limit + ' - x * x)', closed:false, color: limitColor, skipTip: true},
+    
+    //inner circle
+      { fn: 'sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#' + planetColor, skipTip: true },
+      { fn: '-sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#' + planetColor, skipTip: true},
+
+      {points: [
+      [limit * Math.cos(t), limit * Math.sin(t)],
+    ],
+    fnType: 'points',
+    graphType: 'scatter',
+    color: dotColor},
+
+
+
+
+    ]
+  })
+
+  return target
+}
+```
+
+
+## both models?
+
+
+
+
+
+```{ojs}
+functionPlot = require("function-plot@1.22.2/dist/function-plot")
+
+{
+  let target = DOM.element('div')
+  const width = 600 
+  const height = 400
+  let rigidLimit = primaryRadius * Math.pow(densityLarger/densitySmaller * 2, 1/3)
+  let fluidLimit = 2.44*primaryRadius*Math.pow(densityLarger/densitySmaller,1/3)
+  var colorDecimal = parseInt(13740668-densityLarger * 394758)
+  var planetColor = colorDecimal.toString(16)
+
+// desired xDomain values
+  const xScale = [-1, 2]
+  functionPlot({
+    width: width,
+    height: height,
+    grid: true,
+    yLabel: 'test',
+    yAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*2, Math.pow(primaryRadius, 21/20)*2]},
+    xAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*3, Math.pow(primaryRadius, 21/20)*3]},
+    xDomain: xScale,
+    yDomain: computeYScale(width, height, xScale),
+    target,
+    data: [
+
+    //rigid limit
+      { fn: 'sqrt(' + rigidLimit * rigidLimit + ' - x * x)', closed:false, color: '#a3f333', skipTip: true},
+      { fn: '-sqrt(' + rigidLimit * rigidLimit + ' - x * x)', closed:false, color: '#a3f333', skipTip: true},
+
+
+    //fluid limit
+      { fn: 'sqrt(' + fluidLimit * fluidLimit + ' - x * x)',  closed:false, color: '#5588f5', skipTip: true},
+      { fn: '-sqrt(' + fluidLimit * fluidLimit + ' - x * x)', closed:false, color: '#88aaf8', skipTip: true},
+
+      {points: [
+        [Math.cos(t) * rigidLimit, Math.sin(t) * rigidLimit],
+      [fluidLimit * Math.cos(t), fluidLimit * Math.sin(t)],
+    ],
+    fnType: 'points',
+    graphType: 'scatter'},
+    
+    //planet
+      { fn: 'sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#' + planetColor, skipTip: true },
+      { fn: '-sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#' + planetColor, skipTip: true },
+    ]
+  })
+
+  return target
+}
+``` 
+
+```{ojs}
+function computeYScale (width, height, xScale) {
+  const xDiff = xScale[1] - xScale[0]
+  const yDiff = height * xDiff / width
+  return [-yDiff / 2, yDiff / 2]
+}
+```
+
+```{ojs}
+import {Scrubber} from "@mbostock/scrubber"
+
+viewof t = Scrubber(d3.ticks(0, 2 * Math.PI, 500), {
+  autoplay: true,
+  loop: true,
+  initial: 0,
+  format: x => `t = ${x.toFixed(3)}`
+})
+```
+
+
+```{ojs}
+function addHexColor(c1, c2) {
+  var hexStr = (parseInt(c1, 16) + parseInt(c2, 16)).toString(16);
+  while (hexStr.length < 6) { hexStr = '0' + hexStr; } // Zero pad.
+  return hexStr;
+}
+```

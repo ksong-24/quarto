@@ -1,0 +1,645 @@
+---
+title: Roche Limit
+author: "Kyle Song"
+date: "6/13/2023"
+project:
+  type: website
+  output-dir: _site
+  preview:
+    port: 4200
+format:
+  revealjs: 
+    smaller: true
+---
+<!-- connecting to OpenSpace -->
+
+```{ojs}
+address = "localhost"
+port = 4682
+
+{
+  window.connected = false;
+  const sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+  
+  async function checkConnection() {   
+    if (!window.openspaceApi) {
+      window.connected = false;
+      const data = await fetch("https://unpkg.com/openspace-api-js@0.1.5/dist/openspace-api.js");
+      const source = await data.text();
+      eval(source);
+    }
+    if (!window.connected) {
+      window.api = window.openspaceApi(address, port);
+      window.api.onConnect(async () => {
+        try {
+          window.openspace = await window.api.singleReturnLibrary();
+          window.connected = true;
+        } catch (e) {
+          window.connected = false;
+        }
+      });
+      window.api.onDisconnect(() => {
+        window.connected = false;
+      });
+      window.api.connect();
+    }
+    if (window.connected) {
+    }
+    return window.connected ?
+      html`Connected to OpenSpace.` :
+      html`Failed to connect to OpenSpace. Make sure there is an open websocket port at ${address}:${port}.`;
+  }
+  yield html`Connecting...`
+  while (true) {
+    yield checkConnection();
+    await sleep(1000);
+  }
+}
+```
+
+
+```{ojs}
+import {button} from "@jashkenas/inputs"
+```
+
+## Roche Limit Origin Story
+
+- Derived by Édouard Roche (/ʁɔʃ/) to explain the formation of Saturn's rings
+  - Origins of the rings were unknown at the time, so Roche derived an equation to solve the mystery
+
+
+![](Edouard_Roche.jpg){fig-align="center"}
+
+
+## What is the Roche Limit?
+
+- The distance that a celestial object, such as a moon, can be from a more massive object before it breaks into smaller pieces
+- When the tidal forces caused by the planet's gravity are stronger than the moon's self-gravity
+  - Stretching effect and disintegration
+
+![](saturn.jpg){fig-align="center"}
+
+## Roche Limit Equation
+
+There are two models representing the Roche limit, representing rigid and liquid bodies. 
+<br><br>
+The following model represents a rigid body, in which the object is spherical. This neglects the irregular shapes formed by tidal stretching, and therefore is less accurate:
+
+. . .
+
+$$
+d_{rigid} = R_{M}(2 \frac{\rho _{M}}{\rho_{m}})^{\frac{1}{3}}   
+$$
+
+in which $d_{rigid}$, $R_{M}$, $\rho _{M}$, and $\rho _{m}$ represent the Roche limit, radius of the primary object, the density of the primary object, and the density of the satellite, respectively. 
+
+## Fluid Body Model
+
+Similarly, the following model represents a fluid body, in which there are no internal binding forces:
+
+. . .
+
+$$
+d_{fluid} = 2.44R_{M}(\frac{\rho _{M}}{\rho_{m}})^{\frac{1}{3}}
+$$
+
+in which $d_{rigid}$, $R_{M}$, $\rho _{M}$, and $\rho _{m}$ represent the Roche limit, radius of the primary object, the density of the primary object, and the density of the satellite, respectively. 
+
+. . .
+
+<br><br>
+In reality, most celestial objects are neither entirely rigid nor fluid; therefore, these two equations may only serve as a framework for estimating the point at which a satellite disintegrates.
+
+## {.smaller}
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{ojs}
+viewof planet = Inputs.radio(["Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"], {label: "Planet:", value: "Saturn"})
+
+{
+  {
+    if (window.connected) {
+      window.openspace.pathnavigation.flyTo(planet, 5);
+    }
+  }
+}
+```
+
+‍
+
+```{ojs}
+viewof model = Inputs.radio(["Rigid", "Fluid"], {label: "Roche Limit Model: ", value: "Rigid"})
+```
+
+:::
+
+::: {.column width="50%"}
+```{ojs}
+viewof densitySmaller = Inputs.range([0.001, 8], {label: "Moon density:", step: 0.001, value: 0.917})
+```
+
+
+:::
+
+::::
+
+
+
+
+```{ojs}
+functionPlot = require("function-plot@1.22.2/dist/function-plot")
+
+{
+  var limit;
+  var limitColor;
+  var densityLarger
+  var primaryRadius
+  switch (planet)
+  {
+    case "Earth":
+      densityLarger = 5.51
+      primaryRadius = 6378
+      break
+    case "Mars":
+      densityLarger = 3.93
+      primaryRadius = 3390
+      break
+    case "Jupiter":
+      densityLarger = 1.33
+      primaryRadius = 69911
+      break
+    case "Saturn":
+      densityLarger = 0.687
+      primaryRadius = 59232
+      break
+    case "Uranus":
+      densityLarger = 1.27
+      primaryRadius = 25362
+      break
+    case "Neptune":
+      densityLarger = 1.64
+      primaryRadius = 24622
+      break
+  }
+  if (model == "Rigid"){
+    limit = primaryRadius * Math.pow(densityLarger/densitySmaller * 2, 1/3)
+    limitColor = '#a3f333'
+  } else {
+    limit = 2.44*primaryRadius*Math.pow(densityLarger/densitySmaller,1/3)
+    limitColor = '#5588f5'
+  }
+  let target = DOM.element('div')
+  const width = 600 
+  const height = 400
+  var planetColor = (13740668 - (parseInt(densityLarger * 6) * 65793)).toString(16)
+  var dotColor = (13740668 - (parseInt(densitySmaller * 6) * 65793)).toString(16)
+  
+
+// desired xDomain values
+  const xScale = [-1, 2]
+  functionPlot({
+    width: width,
+    height: height,
+
+    yAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*2, Math.pow(primaryRadius, 21/20)*2]},
+    xAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*3, Math.pow(primaryRadius, 21/20)*3]},
+    xDomain: xScale,
+    yDomain: computeYScale(width, height, xScale),
+    target,
+    data: [
+
+    //outer circle
+      { fn:  'sqrt(' + limit * limit + ' - x * x)', closed:false, color: limitColor, skipTip: true },
+      { fn: '-sqrt(' + limit * limit + ' - x * x)', closed:false, color: limitColor, skipTip: true},
+    
+    //inner circle
+      { fn: 'sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#' + planetColor, skipTip: true },
+      { fn: '-sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#' + planetColor, skipTip: true},
+
+      {points: [
+      [limit * Math.cos(t), limit * Math.sin(t)],
+    ],
+    fnType: 'points',
+    graphType: 'scatter',
+    color: dotColor},
+
+
+
+
+    ]
+  })
+
+  return target
+}
+```
+
+```{ojs}
+function computeYScale (width, height, xScale) {
+  const xDiff = xScale[1] - xScale[0]
+  const yDiff = height * xDiff / width
+  return [-yDiff / 2, yDiff / 2]
+}
+```
+
+<br><br><br>
+
+```{ojs}
+import {Scrubber} from "@mbostock/scrubber"
+
+viewof t = Scrubber(d3.ticks(0, 2 * Math.PI, 500), {
+  autoplay: true,
+  loop: true,
+  initial: 0,
+})
+```
+
+
+```{ojs}
+function addHexColor(c1, c2) {
+  var hexStr = (parseInt(c1, 16) + parseInt(c2, 16)).toString(16);
+  while (hexStr.length < 6) { hexStr = '0' + hexStr; } // Zero pad.
+  return hexStr;
+}
+```
+
+##  Both Models
+
+```{ojs}
+
+{
+  let target = DOM.element('div')
+  const width = 600 
+  const height = 400
+  var densityLarger;
+  var primaryRadius
+  switch (planet)
+  {
+    case "Earth":
+      densityLarger = 5.51
+      primaryRadius = 6378
+      break
+    case "Mars":
+      densityLarger = 3.93
+      primaryRadius = 3390
+      break
+    case "Jupiter":
+      densityLarger = 1.33
+      primaryRadius = 69911
+      break
+    case "Saturn":
+      densityLarger = 0.687
+      primaryRadius = 59232
+      break
+    case "Uranus":
+      densityLarger = 1.27
+      primaryRadius = 25362
+      break
+    case "Neptune":
+      densityLarger = 1.64
+      primaryRadius = 24622
+      break
+  }
+  let rigidLimit = primaryRadius * Math.pow(densityLarger/densitySmaller * 2, 1/3)
+  let fluidLimit = 2.44*primaryRadius*Math.pow(densityLarger/densitySmaller,1/3)
+  var planetColor = (13740668 - (parseInt(densityLarger * 6) * 65793)).toString(16)
+  
+
+// desired xDomain values
+  const xScale = [-1, 2]
+  functionPlot({
+    width: width,
+    height: height,
+    grid: true,
+    yLabel: 'test',
+    yAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*2, Math.pow(primaryRadius, 21/20)*2]},
+    xAxis: {domain: [-1*Math.pow(primaryRadius, 21/20)*3, Math.pow(primaryRadius, 21/20)*3]},
+    xDomain: xScale,
+    yDomain: computeYScale(width, height, xScale),
+    target,
+    data: [
+
+    //rigid limit
+      { fn: 'sqrt(' + rigidLimit * rigidLimit + ' - x * x)', closed:false, color: '#a3f333', skipTip: true},
+      { fn: '-sqrt(' + rigidLimit * rigidLimit + ' - x * x)', closed:false, color: '#a3f333', skipTip: true},
+
+
+    //fluid limit
+      { fn: 'sqrt(' + fluidLimit * fluidLimit + ' - x * x)',  closed:false, color: '#5588f5', skipTip: true},
+      { fn: '-sqrt(' + fluidLimit * fluidLimit + ' - x * x)', closed:false, color: '#88aaf8', skipTip: true},
+
+      {points: [
+        [Math.cos(t) * rigidLimit, Math.sin(t) * rigidLimit],
+      [fluidLimit * Math.cos(t), fluidLimit * Math.sin(t)],
+    ],
+    fnType: 'points',
+    graphType: 'scatter'},
+    
+    //planet
+      { fn: 'sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#' + planetColor, skipTip: true },
+      { fn: '-sqrt(' + primaryRadius * primaryRadius + ' - x * x)', closed:true, color: '#' + planetColor, skipTip: true },
+    ]
+  })
+
+  return target
+}
+``` 
+
+
+## Saturn's Rings {.smaller}
+
+Saturn has rings nearly entirely composed of ice. They were likely a result of the disintegration of an ice moon orbiting too close to Saturn, surpassing its Roche limit.
+
+```{ojs}
+// button to jump to Saturn
+viewof jumpToSaturn = button("Jump to Saturn")
+
+{
+  jumpToSaturn;
+  {
+    if (!window.connected) {
+      return;
+    }
+    window.openspace.pathnavigation.flyTo("Saturn", 5);
+  }
+}
+```
+
+```{python}
+#| label: fig-saturn
+#| fig-cap: This graph denotes the distance from which a moon, made from solid ice (with a density of 0.917 grams per cubic centimeter), would have disintegrated.
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+p=np.linspace(0.25,2)
+d=2.44*58232*pow(0.687/p,(1/3))
+r=58232*pow(2*0.687/p, (1/3))
+
+plt.grid(True)
+plt.plot(p,d, color = 'teal', label = 'Fluid body Roche limit')
+plt.plot(p,r, color = 'brown', label = 'Rigid body Roche limit')
+plt.axvline(0.917, color = 'deepskyblue', linestyle = 'dotted', label = 'Density of ice')
+plt.legend(loc='upper right')
+plt.title("Ice Moon and Roche Limits")
+plt.xlabel("Moon density (g/cm³)")
+plt.ylabel("Roche limit of the moon(km)")
+plt.show()
+```
+
+## Would Saturn have rings if it was a different size?
+
+By adjusting the scale of Saturn, notice how the rings will not have existed if Saturn was a different size, for both the rigid and fluid body Roche limits.
+
+Below, adjust the sliders to change the size of Saturn, as well as the distance that an ice moon could be from Saturn. Note that rings only appear once the moon is within Saturn's Roche limit.
+
+
+
+
+
+```{ojs}
+function hasRings(model, scale, moonDistance) {
+  return model === "Rigid" ? moonDistance < 66634.7601339 * scale : moonDistance < 129046.827768 * scale
+}
+```
+:::: {.columns}
+
+::: {.column width="33%"}
+```{ojs}
+viewof saturnModel = Inputs.radio(["Rigid", "Fluid"], {label: "Roche Limit Model: ", value: "Rigid"})
+```
+
+:::
+
+::: {.column width="33%"}
+```{ojs}
+viewof saturnScale = Inputs.range([0.2, 4], {label: "Saturn's Radius:", step: 0.1, value: 1})
+```
+
+:::
+
+::: {.column width="33%"}
+```{ojs}
+viewof moonDistance = Inputs.range([50000, 250000], {label: "Moon's distance from Saturn:", step: 1, value: 100000})
+```
+
+:::
+
+::::
+
+As you can see, as Saturn gets larger, the moon needs to be further away from the planet to stay intact. Likewise, as Saturn gets smaller, the moon needs to be closer to form rings.
+```{ojs}
+{
+  if (window.connected) {
+    window.openspace.setPropertyValueSingle("Scene.Saturn.Scale.Scale", saturnScale, 1)
+    window.openspace.setPropertyValueSingle("Scene.Saturn.Renderable.Rings.Enabled", hasRings(saturnModel, saturnScale, moonDistance))
+  }
+}
+```
+
+
+# Modern applications
+Mars' Moon, Phobos 
+
+## Phobos 
+
+```{ojs}
+// button to jump to Phobos
+viewof jumpToPhobos = button("Jump to Phobos")
+
+{
+  jumpToPhobos;
+  if (!window.connected) {
+      return "";
+    }
+    window.openspace.pathnavigation.flyTo("Phobos", 5);
+}
+```
+
+:::{.incremental}
+- One of Mars' two moons, orbiting at about 6,000km above Mars' surface
+- Approaches Mars at a rate of approximately 1.8 meters per 100 years
+    - Expected to disintegrate as it approaches its Roche limit 
+    - This is predicted to happen in the next 10-50 million years
+:::
+
+. . .
+
+```{python}
+#| label: fig-prediction
+#| fig-cap: "Assuming Phobos approaches Mars at its current rate, it is predicted to disintegrate in around 30 million years, using its rigid body Roche limit."
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0,60)
+y = -x*18+6000
+
+plt.grid(True)  
+plt.axhline(5460.393, linestyle = 'dashed', label = "Rigid Body Roche Limit", color = "orange")
+plt.axvline(50, linestyle = 'dashed', label = "NASA prediction", color = "green")
+plt.plot(x, y, label = "Phobos' distance from Mars")
+plt.title("NASA prediction vs. Rigid Body Roche Limit")
+plt.xlabel("Years from today (x1,000,000 years)")
+plt.ylabel("Distance (km)")
+plt.legend(loc='lower left')
+plt.show()
+```
+
+## Why can't we get a more accurate estimate of the limit?
+- Irregular shapes of planets and moons
+- Molecular interactions
+<!--
+
+
+## Code for graphs {.smaller}
+
+```{.python code-line-numbers="|4|5|10|1-13"}
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0,60)
+y = -x*18+6000
+
+plt.grid(True)
+plt.axhline(5460.393, linestyle = 'dashed', label = "Rigid Body Roche Limit", color = "orange")
+plt.axvline(50, linestyle = 'dashed', label = "NASA prediction", color = "green")
+plt.plot(x, y, label = "Phobos' distance from Mars")
+plt.title("NASA prediction vs. Rigid Body Roche Limit")
+plt.legend(loc='lower left')
+plt.show()
+```
+
+
+```{.python code-line-numbers="|1-3|6-7|10"}
+p=np.linspace(0.25,2)
+d=2.44*58232*pow(0.687/p,(1/3))
+r=58232*pow(2*0.687/p, (1/3))
+
+plt.grid(True)
+plt.plot(p,d, color = 'teal', label = 'Fluid body Roche limit')
+plt.plot(p,r, color = 'brown', label = 'Rigid body Roche limit')
+plt.axvline(0.917, color = 'deepskyblue', linestyle = 'dotted', label = 'Density of ice')
+plt.legend(loc='upper right')
+plt.show()
+```
+
+-->
+
+
+
+## Graphs with Code {.scrollable}
+
+::: {.panel-tabset}
+
+### Mars
+
+```{python}
+#| label: fig-prediction2
+#| fig-cap: "Assuming Phobos approaches Mars at its current rate, it is predicted to disintegrate in around 30 million years, using its rigid body Roche limit."
+#| echo: true
+#| code-line-numbers: "|5|8-9|10-14|15"
+#| output-location: fragment
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0,60)
+y = -x*18+6000
+
+plt.grid(True)
+plt.axhline(5460.393, linestyle = 'dashed', label = "Rigid Body Roche Limit", color = "orange")
+plt.axvline(50, linestyle = 'dashed', label = "NASA prediction", color = "green")
+plt.plot(x, y, label = "Phobos' distance from Mars")
+plt.title("NASA prediction vs. Rigid Body Roche Limit")
+plt.xlabel("Years from today (x1,000,000 years)")
+plt.ylabel("Distance (km)")
+plt.legend(loc='lower left')
+plt.show()
+```
+
+
+### Saturn
+
+```{python}
+#| label: fig-saturn2
+#| fig-cap: Saturn.
+#| echo: true
+#| output-location: fragment
+#| code-line-numbers: "|2-3|6-7|8|10-12|13"
+
+p=np.linspace(0.25,2)
+d=2.44*58232*pow(0.687/p,(1/3))
+r=58232*pow(2*0.687/p, (1/3))
+
+plt.grid(True)
+plt.plot(p,d, color = 'teal', label = 'Fluid body Roche limit')
+plt.plot(p,r, color = 'brown', label = 'Rigid body Roche limit')
+plt.axvline(0.917, color = 'deepskyblue', linestyle = 'dotted', label = 'Density of ice')
+plt.legend(loc='upper right')
+plt.title("Ice Moon and Roche Limits")
+plt.xlabel("Moon density (g/cm³)")
+plt.ylabel("Roche limit of the moon(km)")
+plt.show()
+```
+
+:::
+
+## Future Implications
+
+- Formation of rings and planets
+  - If a planet is within the Roche limit of its star, it likely experiences extreme tidal forces and may result in deformation or destruction
+  - Exoplanets
+- Further destruction of celestial objects in our solar system
+- Pan, Atlas, and Naiad
+
+```{ojs}
+// button to jump to Pan
+viewof jumpToPan = button("Jump to Pan")
+
+{
+  jumpToPan;
+  {
+    const str = "Saturn"
+    if (!window.connected) {
+      return `${str}`
+    }
+    window.openspace.pathnavigation.flyTo("Pan", 3)
+  }
+}
+```
+
+```{ojs}
+
+import { empty } from "rxjs/observable/empty";
+// button to jump to Atlas
+viewof jumpToAtlas = button("Jump to Atlas")
+
+{
+  jumpToAtlas;
+  {
+    if (window.connected) {
+      window.openspace.pathnavigation.flyTo("Atlas", 3) 
+    }
+  }
+  return ""
+}
+```
+
+```{ojs}
+// button to jump to Naiad
+viewof jumpToNaiad = button("Jump to Naiad")
+
+{
+  jumpToNaiad;
+  {
+    if (!window.connected) {
+      return "Neptune";
+    }
+    window.openspace.pathnavigation.flyTo("Naiad", 3)
+  }
+}
+```
+
+![](atlas.jpg){fig-align="center"}
