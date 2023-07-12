@@ -33,7 +33,7 @@ viewof t = Scrubber(d3.ticks(0, 2 * Math.PI, 500), {
 viewof model = Inputs.radio(["Rigid", "Flui d"], {label: "Roche Limit Model: ", value: "Rigid"})
 ```
 
-<!--
+
 ## Calculating the Roche limit
 
 ```{ojs}
@@ -48,10 +48,10 @@ viewof model = Inputs.radio(["Rigid", "Flui d"], {label: "Roche Limit Model: ", 
 }
 ```
 
--->
 
-## working model
-<!--
+
+## Working model
+
 ```{ojs}
 {
 
@@ -94,8 +94,8 @@ viewof model = Inputs.radio(["Rigid", "Flui d"], {label: "Roche Limit Model: ", 
   return target
 }
 ```
--->
-## both models?
+
+## Both Models
 
 ```{ojs}
 
@@ -144,7 +144,7 @@ viewof model = Inputs.radio(["Rigid", "Flui d"], {label: "Roche Limit Model: ", 
 }
 ```
 
-## Normal
+## Drawing circles
 
 ```{ojs}
 
@@ -167,7 +167,7 @@ functionPlot = require("function-plot@1.22.2/dist/function-plot")
 }
 ```
 
-## compute y scale
+## compute y scale function
 
 ```{ojs}
 function computeYScale (width, height, xScale) {
@@ -177,7 +177,7 @@ function computeYScale (width, height, xScale) {
 }
 ```
 
-## implicit
+## Drawing a circle using implicit functions
 
 ```{ojs}
 {
@@ -202,7 +202,7 @@ function computeYScale (width, height, xScale) {
 }
 ```
 
-## Nth Root
+## Nth Root function
 
 ```{ojs}
 {
