@@ -18,7 +18,7 @@ OpenSpace is an open source, non-commercial, and freely available interactive da
 Quarto is an open-source software built to improve the process of creating, publishing, and collaborating on scientific and technical documents. Its capabilities include support for various languages, such as Python, Observable JS, Julia, and R, as well as various outputs, such as HTML, MS Word, LaTeX, and more. In this project, I used a combination of Python and Observable JS code, although I had also experimented with other languages. I created outputs in both HTML and RevealJS presentation formats. More information on Quarto can be found on [their website](https://quarto.org/about.html).
 
 
-## Getting Started
+## Reveal Presentation
 
 ### Required Software
 
