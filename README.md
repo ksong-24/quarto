@@ -22,7 +22,7 @@ Quarto is an open-source software built to improve the process of creating, publ
 
 ### Required Software
 
-Softwares required to run the presentation are Quarto, OpenSpace, and the OpenSpace Developer GUI model. Quarto can be downloaded on [their website](https://quarto.org/about.html), and OpenSpace and the Developer GUI can be downloaded from their GitHub pages, found [here](https://github.com/OpenSpace/OpenSpace) and [here](https://github.com/OpenSpace/OpenSpace-WebGuiFrontend) respectively.
+Softwares required to run the presentation are Quarto, OpenSpace, and the OpenSpace Developer GUI model. Quarto can be downloaded on [their website](https://quarto.org/about.html), and OpenSpace and the Developer GUI can be downloaded from their GitHub pages, found [here](https://github.com/OpenSpace/OpenSpace "OpenSpace") and [here](https://github.com/OpenSpace/OpenSpace-WebGuiFrontend "OpenSpace-WebGuiFrontend") respectively.
 
 ### Getting Started
 
