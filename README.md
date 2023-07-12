@@ -38,3 +38,6 @@ Follow these steps to start the presentation:
 5. If the presentation or UI doesn't load within OpenSpace, press F5 to reload the GUI.
 6. View the presentation by interacting with the (Q) icon in the bottom bar.
 
+## Quarto Experimentation
+
+The folder labeled `Quarto Experimentation` contains the files I used to experiment with Quarto's features, such as the different languages and formats. It also includes a copy of my presentation before I integrated it with the OpenSpace UI. The contents of this folder can function independent of OpenSpace, unlike the final presentation.
