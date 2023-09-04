@@ -11,7 +11,7 @@ A video demonstration of the project can be found [here](https://youtu.be/5AMiT5
 ### OpenSpace
 ![Image](https://raw.githubusercontent.com/OpenSpace/OpenSpace/master/data/openspace-horiz-logo-crop.png)
 
-OpenSpace is an open source, non-commercial, and freely available interactive data visualization software designed to visualize the entire known universe and portray our ongoing efforts to investigate the cosmos. Bringing the latest techniques from data visualization research to the general public, OpenSpace supports interactive presentation of dynamic data from observations, simulations, and space mission planning and operations. More information on OpenSpace can be found on [their GitHub](https://github.com/OpenSpace/OpenSpace) or on [their website](https://www.openspaceproject.com/).
+OpenSpace is an open source, non-commercial, and freely available interactive data visualization software designed to visualize the entire known universe and portray our ongoing efforts to investigate the cosmos. Bringing the latest techniques from data visualization research to the general public, OpenSpace supports interactive presentation of dynamic data from observations, simulations, and space mission planning and operations. OpenSpace is funded by NASA and is partnered with various organizations, such as the American Museum of Natural History, the Linköping University in Sweden, and the VIDA Lab at New York University. More information on OpenSpace can be found on [their GitHub](https://github.com/OpenSpace/OpenSpace) or on [their website](https://www.openspaceproject.com/).
 
 ### Quarto
 
