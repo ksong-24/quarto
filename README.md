@@ -2,7 +2,7 @@
 
 ## Project Description
 
-This internship was a part of my experience with the STEM-EXP program at The Peddie School. I interned for six weeks at the VIDA lab at NYU Tandon, under the mentorship of Ylva Selling. For this internship, my objective was to experiment with the tools in Quarto within OpenSpace. This is a pilot project for Quarto's integration into Openspace. I explored the capabilities and limitations of the various tools in Quarto, and worked with the OpenSpace API to integrate the program into the GUI.
+This internship was a part of my experience with the STEM-EXP program at The Peddie School. I interned for six weeks at the VIDA lab at NYU Tandon, under the mentorship of Ylva Selling. For this internship, my objective was to experiment with the tools in Quarto within OpenSpace. This is a pilot project for Quarto's integration into Openspace, in which I explored the capabilities and limitations of the various tools in Quarto, and worked with the OpenSpace API to integrate the program into the GUI.
 
 A video demonstration of the project can be found [here](https://youtu.be/5AMiT5RBafk).
 
